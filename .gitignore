@@ -1,0 +1,7 @@
+# Python and Environment
+.env
+__pycache__/
+
+# Database
+*.db
+time_capsule.db

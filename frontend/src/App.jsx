@@ -14,7 +14,7 @@ function App() {
     setCapsuleData(null)
 
     try {
-      const response = await fetch(`http://localhost:5000/api/capsule?date=${date}`)
+      const response = await fetch(`http://localhost:5000/api/capsule?date=${date}&city=${city}`)
       
       if (!response.ok) {
         throw new Error("No data found! Try 2006-08-04 or 2006-01-01.")
