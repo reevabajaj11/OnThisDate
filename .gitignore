@@ -5,3 +5,7 @@ __pycache__/
 # Database
 *.db
 time_capsule.db
+
+#Datasets
+*.csv
+*.xslx
