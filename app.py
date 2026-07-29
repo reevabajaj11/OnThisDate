@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS 
 import sqlite3 
 import requests 
+import json
+import random
 
 app = Flask(__name__) 
 CORS(app) 
@@ -70,6 +72,42 @@ def get_historical_news(target_date):
         print(f"Database error: {e}")
         return []
 
+def get_historical_entertainment(target_date):
+    """
+    Fetches and formats random movies and songs from the entertainment dataset.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT movies, songs FROM entertainment WHERE date = ?", (target_date,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            # Parse the stringified JSON from the database
+            movies_list = json.loads(row["movies"])
+            songs_list = json.loads(row["songs"])
+            
+            # Select 1 random movie and split title/url
+            selected_movie = random.choice(movies_list)
+            movie_title, movie_url = selected_movie.split(', ', 1)
+            
+            # Select up to 3 random songs and split title/url
+            selected_songs = random.sample(songs_list, min(3, len(songs_list)))
+            formatted_songs = [{"title": s.split(', ', 1)[0], "url": s.split(', ', 1)[1]} for s in selected_songs]
+            
+            return {
+                "movie": {"title": movie_title, "url": movie_url},
+                "songs": formatted_songs
+            }
+            
+        return None
+        
+    except Exception as e:
+        print(f"Entertainment database error: {e}")
+        return None
+
 @app.route('/api/capsule', methods=['GET']) 
 def get_capsule_data():
     date_param = request.args.get('date') 
@@ -81,14 +119,16 @@ def get_capsule_data():
             
     weather_data = get_historical_weather(lat, lon, date_param) 
     news_data = get_historical_news(date_param)
+    entertainment_data = get_historical_entertainment(date_param)
 
     payload = {
         "date": date_param, 
         "weather": weather_data, 
-        "news": news_data 
+        "news": news_data,
+        "entertainment": entertainment_data
     }
     
     return jsonify(payload), 200 
 
 if __name__ == '__main__': 
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000)

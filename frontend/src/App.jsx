@@ -123,7 +123,8 @@ function BirthStatistics({ date }) {
   const liveBreaths = Math.floor(elapsedMs * (BREATHS_PER_MIN / MS_PER_MINUTE)); 
 
   return (
-    <div className="pt-24 pb-16 max-w-5xl mx-auto px-4"> 
+    // UPDATED: min-h-screen and flex-col for vertical centering
+    <div className="min-h-screen flex flex-col justify-center max-w-5xl mx-auto px-4 py-12"> 
       <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3 text-left"> 
         THE JOURNEY SO FAR 
       </div>
@@ -224,9 +225,11 @@ function ResultsDashboard({ data, personName }) {
   const weatherDetails = weather ? getWeatherDetails(weather.code) : null;
 
   return (
-    <div className="w-full animate-fade-in-up mt-16 pb-32">
+    // Removed margins/padding from the main wrapper to avoid breaking the first frame
+    <div className="w-full animate-fade-in-up">
       
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center relative border-b border-dark-border/50 pb-24">
+      {/* FRAME 1: Title Screen */}
+      <div className="min-h-screen flex flex-col items-center justify-center text-center relative">
         <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.3em] mb-8">
           ONTHISDATE
         </div>
@@ -243,9 +246,15 @@ function ResultsDashboard({ data, personName }) {
         <div className="text-gray-500 text-sm font-sans">
           {data?.searchedLocation?.name}, India
         </div>
+
+        {/* Optional scroll indicator */}
+        <div className="absolute bottom-10 animate-bounce text-gray-500 text-sm tracking-widest font-mono">
+          SCROLL ↓
+        </div>
       </div>
 
-      <div className="pt-28 pb-16 max-w-4xl mx-auto px-4">
+      {/* FRAME 2: Weather */}
+      <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
         <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
           THE AIR AROUND YOU
         </div>
@@ -309,9 +318,71 @@ function ResultsDashboard({ data, personName }) {
         )}
       </div>
 
+      {/* FRAME 3: Birth Statistics */}
       <BirthStatistics date={data.date} />
 
-      <div className="pt-16 pb-16 max-w-4xl mx-auto px-4">
+      {/* FRAME 4: Pop Culture Section */}
+      {data?.entertainment && (
+        <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
+          <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
+            THE CULTURE
+          </div>
+          <h3 className="text-4xl md:text-5xl font-serif text-white mb-10">
+            What the world was watching and listening to.
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            
+            {/* Movie Feature Card */}
+            <a 
+              href={data.entertainment.movie.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="glass-card p-8 flex flex-col justify-center border border-white/5 hover:border-brand-gold/50 transition-colors group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 rounded-full blur-2xl -z-10" />
+              <span className="text-gray-400 font-mono text-xs uppercase tracking-widest mb-4 block">Top Movie</span>
+              <h4 className="text-3xl font-serif text-white group-hover:text-brand-gold transition-colors">
+                {data.entertainment.movie.title}
+              </h4>
+              <div className="text-brand-gold/70 text-sm mt-6 font-sans flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                Read on Wikipedia <span>→</span>
+              </div>
+            </a>
+
+            {/* Soundtrack List Card */}
+            <div className="glass-card p-8 border border-white/5">
+               <span className="text-gray-400 font-mono text-xs uppercase tracking-widest mb-6 block">The Soundtrack</span>
+               <ul className="flex flex-col gap-4">
+                 {data.entertainment.songs.map((song, index) => (
+                   <li key={index} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                     <a 
+                       href={song.url} 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       className="flex items-center gap-4 group"
+                     >
+                       <span className="text-brand-gold font-serif italic text-xl opacity-50 group-hover:opacity-100 transition-opacity">
+                         0{index + 1}
+                       </span>
+                       <span className="text-lg text-gray-200 font-sans group-hover:text-white transition-colors">
+                         {song.title}
+                       </span>
+                       <span className="ml-auto text-gray-600 group-hover:text-brand-gold transition-colors">
+                         ▶
+                       </span>
+                     </a>
+                   </li>
+                 ))}
+               </ul>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* FRAME 5: News */}
+      <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
         <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
           THE HEADLINES
         </div>
@@ -462,4 +533,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
