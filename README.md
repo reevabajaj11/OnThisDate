@@ -422,10 +422,6 @@ Some natural next steps for the project are:
 -   Add automated database/data validation
 -   Add tests for the API and frontend components
 
-## License
-
-Add your preferred license here.
-
 ## Author
 
 Developed as a personal historical-data web project.
