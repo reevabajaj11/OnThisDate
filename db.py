@@ -6,18 +6,20 @@ def setup_database_with_real_data(gold_csv, silver_csv):
     conn = sqlite3.connect('time_capsule.db')
     cursor = conn.cursor()
 
+    # ADDED: usd_rate column
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS historical_data (
             date TEXT PRIMARY KEY,
             gold_price REAL,
             silver_price REAL,
+            usd_rate REAL,
             news_headline TEXT
         )
     ''')
 
-    #Getting gold data
-    real_gold_data = {}      # Stores Gold INR per 10g
-    exchange_rates = {}      # Stores USD to INR ratio for the day
+    # Getting gold data
+    real_gold_data = {}      
+    exchange_rates = {}      
     
     with open(gold_csv, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -34,21 +36,18 @@ def setup_database_with_real_data(gold_csv, silver_csv):
                 inr_10g = (clean_inr_oz / 31.1034768) * 10
                 real_gold_data[csv_date] = inr_10g
 
-    #Getting Silver Data
-    real_silver_data = {}    # Stores Silver INR per kg
+    # Getting Silver Data
+    real_silver_data = {}    
     
     with open(silver_csv, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            csv_date = row['date'] # Lowercase 'd' for silver
+            csv_date = row['date'] 
             
             if csv_date.startswith('2006') and csv_date in exchange_rates and row['price']:
                 clean_silver_usd_oz = float(row['price'])
-                
                 silver_inr_oz = clean_silver_usd_oz * exchange_rates[csv_date]
-                
                 silver_inr_kg = silver_inr_oz / 0.0311034768
-                
                 real_silver_data[csv_date] = silver_inr_kg
 
     start_date = date(2006, 1, 1)
@@ -60,6 +59,7 @@ def setup_database_with_real_data(gold_csv, silver_csv):
     # Starting base values for early Jan 2006
     last_known_gold = 7448.0
     last_known_silver = 13500.0 
+    last_known_usd = 45.00 # Base rate for early 2006
 
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
@@ -69,6 +69,9 @@ def setup_database_with_real_data(gold_csv, silver_csv):
         
         if date_str in real_silver_data:
             last_known_silver = real_silver_data[date_str]
+            
+        if date_str in exchange_rates:
+            last_known_usd = exchange_rates[date_str]
 
         # Baseline headline
         headline = "Economic growth continues steadily across major Indian sectors."
@@ -85,21 +88,22 @@ def setup_database_with_real_data(gold_csv, silver_csv):
             date_str, 
             round(last_known_gold, 2), 
             round(last_known_silver, 2), 
+            round(last_known_usd, 2), # ADDED USD RATE
             headline
         ))
         
         current_date += timedelta(days=1)
 
+    # UPDATED INSERT STATEMENT
     cursor.executemany('''
-        INSERT OR REPLACE INTO historical_data (date, gold_price, silver_price, news_headline)
-        VALUES (?, ?, ?, ?)
+        INSERT OR REPLACE INTO historical_data (date, gold_price, silver_price, usd_rate, news_headline)
+        VALUES (?, ?, ?, ?, ?)
     ''', records_to_insert)
 
     conn.commit()
     conn.close()
     
-    print("Successfully seeded 365 days of 2006.")
-    print("Gold transformed to INR/10g. Silver dynamically priced and transformed to INR/kg.")
+    print("Successfully seeded 365 days of 2006, including daily USD rates.")
 
 if __name__ == '__main__':
     setup_database_with_real_data('Daily.csv', 'silver_price.csv')

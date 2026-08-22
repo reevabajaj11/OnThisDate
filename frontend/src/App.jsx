@@ -1,90 +1,106 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect, useRef } from 'react';
 
+/* -------------------------------------------------------
+   THE DAY YOU ARRIVED
+   Dark Timeline UI
+   Functionality/API logic is preserved; the visual system
+   has been rebuilt around a single historical timeline.
+------------------------------------------------------- */
+
+/* ---------- INPUT / LANDING ---------- */
 
 function Hero() {
   return (
-    <div className="text-center mb-12 mt-8 space-y-4"> 
-      <div className="inline-block px-3 py-1 rounded-full border border-brand-gold/30 bg-brand-gold/10 text-brand-gold text-sm mb-4"> 
-        <span className="mr-2">●</span> A time capsule of India, 2006 
-      </div>
-      <h1 className="text-5xl md:text-7xl font-serif text-white tracking-tight"> 
-        Relive the Day <br /> 
-        <span className="text-brand-gold italic">You Were Born</span> 
+    <section className="landing-hero">
+      <div className="eyebrow">THE DAY YOU ARRIVED</div>
+
+      <h1>
+        The world
+        <br />
+        <em>you arrived into.</em>
       </h1>
-      <p className="text-gray-400 max-w-2xl mx-auto text-lg mt-6"> 
-        Explore the weather, news, prices, and major events from any day in India's history. 
+
+      <p>
+        Reconstruct a single day in India's history through the
+        news, weather, prices, culture and small details that made it real.
       </p>
-    </div>
+    </section>
   );
 }
 
 function CityAutocomplete({ onLocationSelect }) {
-  const [inputValue, setInputValue] = useState(''); 
-  const [suggestions, setSuggestions] = useState([]); 
-  const [isSearching, setIsSearching] = useState(false); 
+  const [inputValue, setInputValue] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => { 
-    if (inputValue.length < 2) { 
-      setSuggestions([]); 
-      return; 
+  useEffect(() => {
+    if (inputValue.length < 2) {
+      setSuggestions([]);
+      return;
     }
 
-    const delayDebounceFn = setTimeout(async () => { 
-      setIsSearching(true); 
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+
       try {
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${inputValue}&count=5&format=json`); 
-        const data = await response.json(); 
-        
-        if (data.results) { 
-          const locations = data.results 
-            .filter(place => place.country === "India")  
-            .map(place => ({ 
-              name: place.name, 
-              state: place.admin1, 
-              lat: place.latitude, 
-              lon: place.longitude 
-            })); 
-            
-          const uniqueLocations = Array.from(new Set(locations.map(a => a.name + a.state))) 
-            .map(id => locations.find(a => a.name + a.state === id)); 
+        const response = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${inputValue}&count=5&format=json`
+        );
 
-          setSuggestions(uniqueLocations); 
+        const data = await response.json();
+
+        if (data.results) {
+          const locations = data.results
+            .filter((place) => place.country === 'India')
+            .map((place) => ({
+              name: place.name,
+              state: place.admin1,
+              lat: place.latitude,
+              lon: place.longitude,
+            }));
+
+          const uniqueLocations = Array.from(
+            new Set(locations.map((a) => a.name + a.state))
+          ).map((id) => locations.find((a) => a.name + a.state === id));
+
+          setSuggestions(uniqueLocations);
         } else {
-          setSuggestions([]); 
+          setSuggestions([]);
         }
-      } catch (error) { 
-        console.error("Geocoding API failed", error); 
+      } catch (error) {
+        console.error('Geocoding API failed', error);
       } finally {
-        setIsSearching(false); 
+        setIsSearching(false);
       }
-    }, 400);  
+    }, 400);
 
-    return () => clearTimeout(delayDebounceFn); 
-  }, [inputValue]); 
+    return () => clearTimeout(delayDebounceFn);
+  }, [inputValue]);
 
   return (
-    <div className="relative w-full"> 
+    <div className="relative w-full">
       <input
-        type="text" 
-        placeholder="Search a city..." 
-        value={inputValue} 
-        onChange={(e) => setInputValue(e.target.value)} 
-        className="glass-input w-full" 
+        type="text"
+        placeholder={isSearching ? 'Searching...' : 'Search your city'}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        className="timeline-input w-full"
       />
-      
-      {suggestions.length > 0 && ( 
-        <ul className="absolute z-50 w-full mt-2 bg-[#1A1A1A] border border-dark-border rounded-lg shadow-glass overflow-hidden"> 
-          {suggestions.map((loc, index) => ( 
-            <li 
-              key={index}  
-              className="px-4 py-3 cursor-pointer hover:bg-white/10 text-gray-200 border-b border-dark-border last:border-b-0 transition-colors" 
-              onClick={() => { 
-                setInputValue(`${loc.name}, ${loc.state}`); 
-                setSuggestions([]);  
-                onLocationSelect(loc);  
+
+      {suggestions.length > 0 && (
+        <ul className="absolute z-50 w-full mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#11110f] shadow-2xl">
+          {suggestions.map((loc, index) => (
+            <li
+              key={index}
+              className="cursor-pointer border-b border-white/5 px-4 py-3 text-gray-200 transition-colors last:border-b-0 hover:bg-white/5"
+              onClick={() => {
+                setInputValue(`${loc.name}, ${loc.state}`);
+                setSuggestions([]);
+                onLocationSelect(loc);
               }}
             >
-              <strong className="text-white">{loc.name}</strong> <span className="text-sm text-gray-400">({loc.state})</span> 
+              <strong className="text-white">{loc.name}</strong>{' '}
+              <span className="text-sm text-gray-500">({loc.state})</span>
             </li>
           ))}
         </ul>
@@ -93,442 +109,774 @@ function CityAutocomplete({ onLocationSelect }) {
   );
 }
 
-function BirthStatistics({ date }) {
-  const [elapsedMs, setElapsedMs] = useState(0); 
+/* ---------- TIMELINE BUILDING BLOCKS ---------- */
 
-  useEffect(() => { 
-    if (!date) return; 
-    
-    const birthTimestamp = new Date(`${date}T00:00:00`).getTime(); 
-    
-    const interval = setInterval(() => { 
-      setElapsedMs(Date.now() - birthTimestamp); 
-    }, 1000); 
+function TimelineSection({
+  number,
+  label,
+  title,
+  children,
+  image,
+  wide = false,
+  index = 0,
+  activeIndex = 0,
+  registerSection,
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
-    setElapsedMs(Date.now() - birthTimestamp); 
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
 
-    return () => clearInterval(interval); 
-  }, [date]); 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
 
-  if (!date || !elapsedMs) return null; 
-
-  const diffDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24)); 
-  const lunarOrbits = Math.floor(diffDays / 27.3); 
-  
-  const BPM = 72; 
-  const BREATHS_PER_MIN = 16; 
-  const MS_PER_MINUTE = 60000; 
-  
-  const liveHeartbeats = Math.floor(elapsedMs * (BPM / MS_PER_MINUTE)); 
-  const liveBreaths = Math.floor(elapsedMs * (BREATHS_PER_MIN / MS_PER_MINUTE)); 
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    // UPDATED: min-h-screen and flex-col for vertical centering
-    <div className="min-h-screen flex flex-col justify-center max-w-5xl mx-auto px-4 py-12"> 
-      <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3 text-left"> 
-        THE JOURNEY SO FAR 
+    <section
+      ref={(node) => {
+        sectionRef.current = node;
+        registerSection?.(index, node);
+      }}
+      className={`timeline-section ${wide ? 'timeline-section-wide' : ''} ${
+        isVisible ? 'is-visible' : ''
+      }`}
+    >
+      <div className={`timeline-marker ${activeIndex === index ? 'is-active' : ''}`}>
+        <span>{number}</span>
       </div>
-      <h3 className="text-4xl md:text-5xl font-serif text-white mb-10 text-left"> 
-        Since that day... 
-      </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"> 
-        
-        <div className="glass-card p-6 border border-white/5 hover:border-brand-gold/30 transition-colors flex flex-col justify-between text-left min-h-[160px]"> 
-          <div className="flex justify-between items-start w-full"> 
-            <div className="text-gray-400 font-mono text-[10px] uppercase tracking-widest">Days Alive</div> 
-            <div className="text-brand-gold/70 text-sm">✨</div> 
+      <div className="timeline-content">
+        <div className="timeline-label">{label}</div>
+
+        <div className="timeline-heading-row">
+          <h2>{title}</h2>
+          {image && <div className="timeline-image">{image}</div>}
+        </div>
+
+        <div className="timeline-stagger">
+          {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntroTimeline({ personName, formattedDate, locationName }) {
+  return (
+    <section className="timeline-opening">
+      <div className="timeline-opening-line" />
+
+      <div className="timeline-opening-copy">
+        <div className="eyebrow">A PERSONAL ARCHIVE</div>
+
+        <h2>
+          On <span>{formattedDate}</span>
+          <br />
+          <strong>{personName}</strong> arrived.
+        </h2>
+
+        <p>
+          {locationName}, India
+          <br />
+          <span>The beginning of a very long story.</span>
+        </p>
+
+        <div className="scroll-hint">
+          <span className="scroll-dot" />
+          SCROLL TO TRAVEL BACK
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- WORLD ---------- */
+
+function WorldSection({ news, date, activeIndex, registerSection }) {
+  return (
+    <TimelineSection number="01" label="THE WORLD" title="What was happening?" index={0} activeIndex={activeIndex} registerSection={registerSection}>
+      <div className="section-intro">
+        Headlines and events recorded around the country on this exact date.
+      </div>
+
+      {news && news.length > 0 ? (
+        <div className="news-list">
+          {news.map((item, idx) => (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="news-item"
+              key={idx}
+            >
+              <span className="news-number">
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+
+              <div>
+                <h3>{item.headline}</h3>
+                <p>
+                  Archive record · {date}
+                </p>
+              </div>
+
+              <span className="news-arrow">↗</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">No headlines stored for this date.</div>
+      )}
+    </TimelineSection>
+  );
+}
+
+/* ---------- SKY ---------- */
+
+function WeatherSection({ weather, location, date, activeIndex, registerSection }) {
+  const getWeatherDetails = (code) => {
+    const map = {
+      0: { text: 'Clear skies', icon: '☀' },
+      1: { text: 'Mostly clear', icon: '◐' },
+      2: { text: 'Partly cloudy', icon: '◒' },
+      3: { text: 'Overcast', icon: '☁' },
+      45: { text: 'Misty fog', icon: '◌' },
+      48: { text: 'Freezing fog', icon: '◌' },
+      51: { text: 'Light drizzle', icon: '╱' },
+      53: { text: 'Moderate drizzle', icon: '╱' },
+      55: { text: 'Dense drizzle', icon: '╱' },
+      61: { text: 'Slight rain', icon: '⌁' },
+      63: { text: 'Moderate rain', icon: '⌁' },
+      65: { text: 'Heavy rainfall', icon: '⌁' },
+      71: { text: 'Light snowfall', icon: '✧' },
+      95: { text: 'Thunderstorms', icon: 'ϟ' },
+    };
+
+    return map[code] || { text: 'Mild conditions', icon: '○' };
+  };
+
+  const details = weather ? getWeatherDetails(weather.code) : null;
+
+  // Support the common Open-Meteo field names as well as the shorter
+  // names a backend may already be returning.
+  const humidity = weather?.humidity ?? weather?.relative_humidity ?? weather?.relative_humidity_2m;
+  const wind = weather?.wind_speed ?? weather?.wind_speed_10m ?? weather?.wind;
+  const rainProbability = weather?.precipitation_probability ?? weather?.rain_probability;
+  const rainAmount = weather?.rain_mm;
+
+  const formatValue = (value, suffix = '') =>
+    value === null || value === undefined || value === '' ? '—' : `${value}${suffix}`;
+
+  const formattedDate = date
+    ? new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Historical weather';
+
+  return (
+    <TimelineSection number="02" label="THE SKY" title="What did the day feel like?" index={1} activeIndex={activeIndex} registerSection={registerSection}>
+      <div className="weather-card">
+        <div className="weather-card-header">
+          <div>
+            <div className="weather-location">{location?.name || 'India'}, India</div>
+            <div className="weather-date">{formattedDate}</div>
           </div>
-          <div className="mt-6"> 
-            <div className="text-4xl font-serif text-white mb-1">{diffDays.toLocaleString()}</div> 
-            <div className="text-gray-500 font-mono text-[11px]">And counting</div> 
+          <div className="weather-condition-dot" aria-hidden="true" />
+        </div>
+
+        <div className="weather-hero">
+          <div className="weather-icon" aria-hidden="true">{details?.icon || '○'}</div>
+          <div className="weather-reading">
+            <div className="weather-temperature">
+              {weather ? `${weather.max_temp}°` : '—'}
+            </div>
+            <div className="weather-description">
+              {details?.text || 'Weather data unavailable'}
+            </div>
           </div>
         </div>
 
-        <div className="glass-card p-6 border border-white/5 hover:border-brand-gold/30 transition-colors flex flex-col justify-between text-left min-h-[160px]"> 
-          <div className="flex justify-between items-start w-full"> 
-            <div className="text-gray-400 font-mono text-[10px] uppercase tracking-widest">Heartbeats</div> 
-            <div className="text-brand-gold/70 text-sm">♡</div> 
+        <div className="weather-range">
+          <div className="weather-range-item">
+            <span>HIGH</span>
+            <strong>{formatValue(weather?.max_temp, '°')}</strong>
+            <span className="weather-trend weather-trend-up">↗</span>
           </div>
-          <div className="mt-6"> 
-            <div className="text-4xl font-serif text-white mb-1">{liveHeartbeats.toLocaleString()}</div> 
-            <div className="text-gray-500 font-mono text-[11px]">Approx. at {BPM} bpm</div> 
-          </div>
-        </div>
-
-        <div className="glass-card p-6 border border-white/5 hover:border-brand-gold/30 transition-colors flex flex-col justify-between text-left min-h-[160px]"> 
-          <div className="flex justify-between items-start w-full"> 
-            <div className="text-gray-400 font-mono text-[10px] uppercase tracking-widest">Breaths Taken</div> 
-            <div className="text-brand-gold/70 text-sm">💨</div> 
-          </div>
-          <div className="mt-6"> 
-            <div className="text-4xl font-serif text-white mb-1">{liveBreaths.toLocaleString()}</div> 
-            <div className="text-gray-500 font-mono text-[11px]">Approx. at {BREATHS_PER_MIN} breaths/min</div> 
+          <div className="weather-range-item">
+            <span>LOW</span>
+            <strong>{formatValue(weather?.min_temp, '°')}</strong>
+            <span className="weather-trend weather-trend-down">↘</span>
           </div>
         </div>
 
-        <div className="glass-card p-6 border border-white/5 hover:border-brand-gold/30 transition-colors flex flex-col justify-between text-left min-h-[160px]"> 
-          <div className="flex justify-between items-start w-full"> 
-            <div className="text-gray-400 font-mono text-[10px] uppercase tracking-widest">Full Moons Witnessed</div> 
-            <div className="text-brand-gold/70 text-sm">☾</div> 
+        <div className="weather-stats">
+          <div className="weather-stat">
+            <span>HUMIDITY</span>
+            <strong>{formatValue(humidity, '%')}</strong>
           </div>
-          <div className="mt-6"> 
-            <div className="text-4xl font-serif text-white mb-1">{lunarOrbits.toLocaleString()}</div> 
-            <div className="text-gray-500 font-mono text-[11px]">Complete orbits</div> 
+          <div className="weather-stat">
+            <span>WIND</span>
+            <strong>{formatValue(wind, ' km/h')}</strong>
+          </div>
+          <div className="weather-stat">
+            <span>RAIN</span>
+            <strong>{rainProbability !== null && rainProbability !== undefined
+                ? formatValue(rainProbability, '%')
+                : formatValue(rainAmount, ' mm')}</strong>
           </div>
         </div>
+      </div>
+    </TimelineSection>
+  );
+}
 
+/* ---------- MARKET ---------- */
+
+function MarketSection({ economy, activeIndex, registerSection }) {
+  return (
+    <TimelineSection
+      number="03"
+      label="THE MARKET"
+      title="What did things cost?"
+      index={2}
+      activeIndex={activeIndex}
+      registerSection={registerSection}
+    >
+      <div className="market-heading">
+        <p>A snapshot of prices on this day.</p>
+
+        <div className="market-source">
+          <span className="market-calendar-icon" aria-hidden="true">▦</span>
+          <span>Prices from historical records</span>
+        </div>
+      </div>
+
+      <div className="market-grid">
+        <MarketValue
+          icon="◆"
+          label="GOLD (22K)"
+          value={economy?.gold}
+          prefix="₹"
+          suffix="for 10 grams"
+        />
+
+        <MarketValue
+          icon="▰"
+          label="SILVER"
+          value={economy?.silver}
+          prefix="₹"
+          suffix="for 1 kilogram"
+        />
+
+        <MarketValue
+          icon="$"
+          label="USD / INR"
+          value={economy?.usd}
+          prefix="₹"
+          decimals
+          suffix="1 US Dollar"
+        />
+      </div>
+
+      <p className="market-note">
+        Note: Prices are approximate and may vary.
+      </p>
+    </TimelineSection>
+  );
+}
+
+function MarketValue({
+  icon,
+  label,
+  value,
+  prefix = '',
+  suffix,
+  decimals = false,
+}) {
+  const numericValue =
+    value !== null && value !== undefined && value !== '' ? Number(value) : null;
+
+  const formatted =
+    numericValue !== null && !Number.isNaN(numericValue)
+      ? decimals
+        ? numericValue.toFixed(2)
+        : numericValue.toLocaleString('en-IN')
+      : '—';
+
+  return (
+    <div className="market-value">
+      <div className="market-icon" aria-hidden="true">
+        <span>{icon}</span>
+      </div>
+
+      <div className="market-label">{label}</div>
+
+      <div className="market-price">
+        {prefix}
+        {formatted}
+      </div>
+
+      <div className="market-unit">
+        <span>—</span>
+        {suffix}
       </div>
     </div>
   );
 }
 
+
+/* ---------- SOUND / CULTURE ---------- */
+
+function SoundSection({ entertainment, location, weather, activeIndex, registerSection }) {
+  return (
+    <TimelineSection number="04" label="THE SOUND" title="What were people watching and listening?" index={3} activeIndex={activeIndex} registerSection={registerSection}>
+      <div className="culture-layout">
+        <div className="culture-feature">
+          <span className="small-label">IN THEATRES</span>
+
+          {entertainment?.movie ? (
+            <a
+              href={entertainment.movie.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <h3>{entertainment.movie.title}</h3>
+              <span className="text-link">View record ↗</span>
+            </a>
+          ) : (
+            <h3>Movie data unavailable.</h3>
+          )}
+        </div>
+
+        <div className="culture-songs">
+          <span className="small-label">TRENDING SOUNDTRACK</span>
+
+          {entertainment?.songs?.length ? (
+            <ol>
+              {entertainment.songs.map((song, i) => (
+                <li key={i}>
+                  <span>{String(i + 1).padStart(2, '0')}</span>
+
+                  <a
+                    href={song.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {song.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="empty-state">No music records available.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="culture-note">
+        <span>SMALL DETAILS</span>
+        <p>
+          {location?.name || 'India'} · {weather?.max_temp ?? '—'}°C ·
+          a completely ordinary day that happened to become yours.
+        </p>
+      </div>
+    </TimelineSection>
+  );
+}
+
+// /* ---------- THE EVERYDAY ---------- */
+
+// function EverydaySection({ date, activeIndex, registerSection }) {
+//   return (
+//     <TimelineSection number="05" label="THE EVERYDAY" title="Before it became your past." index={4} activeIndex={activeIndex} registerSection={registerSection}>
+//       <div className="everyday-statement">
+//         <p>
+//           History is usually remembered through the big things.
+//           <br />
+//           This is about everything else.
+//         </p>
+
+//         <span>
+//           {date} · An ordinary day, preserved.
+//         </span>
+//       </div>
+//     </TimelineSection>
+//   );
+// }
+
+/* ---------- ENDING ---------- */
+
+function BirthStatistics({ date }) {
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const endingRef = useRef(null);
+
+  useEffect(() => {
+    const node = endingRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [elapsedMs]);
+
+  useEffect(() => {
+    if (!date) return;
+
+    const birthTimestamp = new Date(`${date}T00:00:00`).getTime();
+
+    const interval = setInterval(() => {
+      setElapsedMs(Date.now() - birthTimestamp);
+    }, 1000);
+
+    setElapsedMs(Date.now() - birthTimestamp);
+
+    return () => clearInterval(interval);
+  }, [date]);
+
+  if (!date || !elapsedMs) return null;
+
+  const diffDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
+  const lunarOrbits = Math.floor(diffDays / 27.3);
+
+  const BPM = 72;
+  const BREATHS_PER_MIN = 16;
+  const MS_PER_MINUTE = 60000;
+
+  const liveHeartbeats = Math.floor(
+    elapsedMs * (BPM / MS_PER_MINUTE)
+  );
+
+  const liveBreaths = Math.floor(
+    elapsedMs * (BREATHS_PER_MIN / MS_PER_MINUTE)
+  );
+
+  return (
+    <section ref={endingRef} className={`timeline-ending dashboard-ending-reveal ${isVisible ? "is-visible" : ""}`}>
+      <div className="ending-line" />
+
+      <div className="eyebrow">THE JOURNEY SO FAR</div>
+
+      <h2>And now, look how far you've come.</h2>
+
+      <div className="stats-grid">
+        <Stat index={0} label="DAYS ALIVE" value={diffDays.toLocaleString()} note="and counting" />
+        <Stat index={1} label="HEARTBEATS" value={liveHeartbeats.toLocaleString()} note={`approx. at ${BPM} bpm`} />
+        <Stat index={2} label="BREATHS TAKEN" value={liveBreaths.toLocaleString()} note={`approx. at ${BREATHS_PER_MIN}/min`} />
+        <Stat index={3} label="MOONS WITNESSED" value={lunarOrbits.toLocaleString()} note="complete lunar orbits" />
+      </div>
+
+      <div className="final-note">
+        <br />
+      </div>
+    </section>
+  );
+}
+
+function Stat({ label, value, note, index = 0 }) {
+  return (
+    <div className="stat-item" style={{ '--stat-delay': `${index * 110}ms` }}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{note}</small>
+    </div>
+  );
+}
+
+/* ---------- RESULTS ---------- */
+
 function ResultsDashboard({ data, personName }) {
   const dateObj = new Date(`${data?.date}T12:00:00`);
-  const formattedDate = !isNaN(dateObj.getTime()) 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const trackRef = useRef(null);
+  const sectionRefs = useRef([]);
+
+  const formattedDate = !isNaN(dateObj.getTime())
     ? dateObj.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       })
     : '';
 
-  const formatTime = (isoString) => {
-    if (!isoString) return '--:--';
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return '--:--';
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const registerSection = (index, node) => {
+    sectionRefs.current[index] = node;
   };
 
-  const getWeatherDetails = (code) => {
-    const map = {
-      0: { text: "Clear, sunny skies", icon: "☀️" },
-      1: { text: "Mostly clear skies", icon: "🌤️" },
-      2: { text: "Partly cloudy", icon: "⛅" },
-      3: { text: "Overcast skies", icon: "☁️" },
-      45: { text: "Misty fog", icon: "🌫️" },
-      48: { text: "Freezing fog", icon: "🌫️" },
-      51: { text: "Light drizzle", icon: "🌦️" },
-      53: { text: "Moderate drizzle", icon: "🌦️" },
-      55: { text: "Dense drizzle", icon: "🌧️" },
-      61: { text: "Slight rain", icon: "🌧️" },
-      63: { text: "Moderate rain", icon: "🌧️" },
-      65: { text: "Heavy rainfall", icon: "🌧️" },
-      71: { text: "Light snowfall", icon: "🌨️" },
-      95: { text: "Thunderstorms", icon: "🌩️" },
+  // The progress line follows the actual timeline sections instead of
+  // being based on viewport distance. This keeps every section's progress
+  // visually consistent even when sections have different heights.
+  useEffect(() => {
+    const updateProgress = () => {
+      const track = trackRef.current;
+      if (!track) return;
+
+      const currentSection = sectionRefs.current[activeIndex];
+      if (!currentSection) {
+        setProgress(0);
+        return;
+      }
+
+      const trackRect = track.getBoundingClientRect();
+      const sectionRect = currentSection.getBoundingClientRect();
+      const markerOffset = sectionRect.top - trackRect.top + 123 + 19;
+      const nextProgress = Math.max(0, Math.min(trackRect.height, markerOffset));
+
+      setProgress(nextProgress);
     };
-    return map[code] || { text: "Mild conditions", icon: "🌍" };
-  };
 
-  const weather = data?.weather;
-  const weatherDetails = weather ? getWeatherDetails(weather.code) : null;
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
+  }, [activeIndex]);
+
+  useEffect(() => {
+    const nodes = sectionRefs.current.filter(Boolean);
+    if (!nodes.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (!visible.length) return;
+
+        const index = nodes.indexOf(visible[0].target);
+        if (index >= 0) setActiveIndex(index);
+      },
+      {
+        threshold: [0.15, 0.35, 0.55],
+        rootMargin: '-20% 0px -42% 0px',
+      }
+    );
+
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    // Removed margins/padding from the main wrapper to avoid breaking the first frame
-    <div className="w-full animate-fade-in-up">
-      
-      {/* FRAME 1: Title Screen */}
-      <div className="min-h-screen flex flex-col items-center justify-center text-center relative">
-        <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.3em] mb-8">
-          ONTHISDATE
-        </div>
-        
-        <h2 className="text-5xl md:text-7xl font-serif text-white mb-8 leading-tight">
-          The world the <br />
-          day <span className="text-brand-gold">{personName}</span> arrived.
-        </h2>
-        
-        <div className="text-gray-300 text-xl font-serif mb-3">
-          {formattedDate}
-        </div>
-        
-        <div className="text-gray-500 text-sm font-sans">
-          {data?.searchedLocation?.name}, India
-        </div>
+    <main className="timeline-page dashboard-enter">
+      <IntroTimeline
+        personName={personName}
+        formattedDate={formattedDate}
+        locationName={data?.searchedLocation?.name}
+      />
 
-        {/* Optional scroll indicator */}
-        <div className="absolute bottom-10 animate-bounce text-gray-500 text-sm tracking-widest font-mono">
-          SCROLL ↓
-        </div>
+      <div
+        ref={trackRef}
+        className="timeline-track"
+        style={{ '--timeline-progress': `${progress}px` }}
+      >
+        <div className="timeline-progress" aria-hidden="true" />
+
+        <WorldSection
+          news={data?.news}
+          date={data?.date}
+          activeIndex={activeIndex}
+          registerSection={registerSection}
+        />
+
+        <WeatherSection
+          weather={data?.weather}
+          location={data?.searchedLocation}
+          date={data?.date}
+          activeIndex={activeIndex}
+          registerSection={registerSection}
+        />
+
+        <MarketSection
+          economy={data?.economy}
+          activeIndex={activeIndex}
+          registerSection={registerSection}
+        />
+
+        <SoundSection
+          entertainment={data?.entertainment}
+          location={data?.searchedLocation}
+          weather={data?.weather}
+          activeIndex={activeIndex}
+          registerSection={registerSection}
+        />
+
       </div>
 
-      {/* FRAME 2: Weather */}
-      <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
-        <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
-          THE AIR AROUND YOU
-        </div>
-        <h3 className="text-4xl md:text-5xl font-serif text-white mb-10">
-          The weather you arrived to.
-        </h3>
-        
-        {weather ? (
-          <div className="relative glass-card overflow-hidden p-8 md:p-12 border border-white/10 bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent">
-            
-            <div className="absolute top-0 left-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-
-            <div className="flex flex-col gap-10">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                
-                <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                  <div className="relative mb-4">
-                    <span className="text-7xl md:text-8xl filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
-                      {weatherDetails?.icon}
-                    </span>
-                  </div>
-                  <span className="text-2xl md:text-3xl text-white font-serif tracking-wide">
-                    {weatherDetails?.text}
-                  </span>
-                </div>
-                
-                <div className="flex flex-col items-center md:items-end">
-                  <div className="text-6xl md:text-8xl text-white font-serif tracking-tight mb-2 flex items-baseline">
-                    {weather.max_temp}
-                    <span className="text-brand-gold font-sans text-4xl md:text-5xl font-light ml-1">°C</span>
-                  </div>
-                  
-                  <div className="text-gray-400 text-xs font-mono tracking-widest uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                    LOW <span className="text-gray-200 font-semibold">{weather.min_temp}°C</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {weather.sunrise && weather.sunset && (
-                <div className="pt-8 border-t border-white/10 flex flex-col items-center text-center gap-3">
-                  <div className="text-gray-300 font-mono tracking-widest text-sm">
-                    <span className="text-brand-gold text-lg mr-2">☀️</span> {formatTime(weather.sunrise)} 
-                    <span className="mx-6 text-dark-border">|</span> 
-                    <span className="text-brand-gold text-lg mr-2">🌙</span> {formatTime(weather.sunset)}
-                  </div>
-                  {weather.daylight_hours !== undefined && (
-                    <div className="text-gray-400 font-serif italic text-lg mt-1">
-                      A day bathed in {weather.daylight_hours} hours and {weather.daylight_minutes || 0} minutes of sunlight.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-          </div>
-        ) : (
-          <div className="glass-card p-10 text-center text-gray-500 font-serif">
-            Weather archives are unavailable for this date.
-          </div>
-        )}
-      </div>
-
-      {/* FRAME 3: Birth Statistics */}
-      <BirthStatistics date={data.date} />
-
-      {/* FRAME 4: Pop Culture Section */}
-      {data?.entertainment && (
-        <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
-          <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
-            THE CULTURE
-          </div>
-          <h3 className="text-4xl md:text-5xl font-serif text-white mb-10">
-            What the world was watching and listening to.
-          </h3>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            
-            {/* Movie Feature Card */}
-            <a 
-              href={data.entertainment.movie.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="glass-card p-8 flex flex-col justify-center border border-white/5 hover:border-brand-gold/50 transition-colors group relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 rounded-full blur-2xl -z-10" />
-              <span className="text-gray-400 font-mono text-xs uppercase tracking-widest mb-4 block">Top Movie</span>
-              <h4 className="text-3xl font-serif text-white group-hover:text-brand-gold transition-colors">
-                {data.entertainment.movie.title}
-              </h4>
-              <div className="text-brand-gold/70 text-sm mt-6 font-sans flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                Read on Wikipedia <span>→</span>
-              </div>
-            </a>
-
-            {/* Soundtrack List Card */}
-            <div className="glass-card p-8 border border-white/5">
-               <span className="text-gray-400 font-mono text-xs uppercase tracking-widest mb-6 block">The Soundtrack</span>
-               <ul className="flex flex-col gap-4">
-                 {data.entertainment.songs.map((song, index) => (
-                   <li key={index} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                     <a 
-                       href={song.url} 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="flex items-center gap-4 group"
-                     >
-                       <span className="text-brand-gold font-serif italic text-xl opacity-50 group-hover:opacity-100 transition-opacity">
-                         0{index + 1}
-                       </span>
-                       <span className="text-lg text-gray-200 font-sans group-hover:text-white transition-colors">
-                         {song.title}
-                       </span>
-                       <span className="ml-auto text-gray-600 group-hover:text-brand-gold transition-colors">
-                         ▶
-                       </span>
-                     </a>
-                   </li>
-                 ))}
-               </ul>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* FRAME 5: News */}
-      <div className="min-h-screen flex flex-col justify-center max-w-4xl mx-auto px-4 py-12">
-        <div className="text-brand-gold text-xs font-sans uppercase tracking-[0.25em] mb-3">
-          THE HEADLINES
-        </div>
-        <h3 className="text-4xl md:text-5xl font-serif text-white mb-10">
-          News that defined the day.
-        </h3>
-        
-        {data?.news && data.news.length > 0 ? (
-          <div className="grid gap-4">
-            {data.news.map((item, index) => (
-              <a 
-                key={index}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer" 
-                className="glass-card p-6 block hover:bg-white/10 transition-colors border border-white/5 hover:border-brand-gold/50 group"
-              >
-                <h4 className="text-xl md:text-2xl text-white font-serif group-hover:text-brand-gold transition-colors">
-                  {item.headline}
-                </h4>
-                <div className="text-brand-gold/70 text-sm mt-3 font-sans flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Read Full Article <span>→</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        ) : (
-           <div className="glass-card p-10 text-center text-gray-500 font-serif">
-            No news archives found for this date.
-          </div>
-        )}
-      </div>
-
-    </div>
+      <BirthStatistics date={data?.date} />
+    </main>
   );
 }
 
+/* ---------- MAIN APP ---------- */
 
 function App() {
-  const [personName, setPersonName] = useState('Reeva'); 
-  const [selectedDate, setSelectedDate] = useState(''); 
-  const [selectedLocation, setSelectedLocation] = useState(null);  
-  const [capsuleData, setCapsuleData] = useState(null); 
-  const [loading, setLoading] = useState(false); 
-  const [error, setError] = useState(''); 
+  const [personName, setPersonName] = useState('Reeva');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [capsuleData, setCapsuleData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleOpenCapsule = async () => { 
-    if (!personName) { 
-      setError("Please enter a name."); 
-      return; 
-    }
-    if (!selectedDate) { 
-      setError("Please select a valid date."); 
-      return; 
-    }
-    if (!selectedLocation) { 
-      setError("Please search and select a valid city from the dropdown."); 
-      return; 
+  const handleOpenCapsule = async () => {
+    if (!personName) {
+      setError('Please enter a name.');
+      return;
     }
 
-    setLoading(true); 
-    setError(''); 
-    setCapsuleData(null);  
+    if (!selectedDate) {
+      setError('Please select a valid date.');
+      return;
+    }
+
+    if (!selectedLocation) {
+      setError('Please search and select a valid city from the dropdown.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setCapsuleData(null);
 
     try {
-      const url = `http://localhost:5000/api/capsule?date=${selectedDate}&city=${selectedLocation.name}&lat=${selectedLocation.lat}&lon=${selectedLocation.lon}`; 
-      
-      const response = await fetch(url); 
-      
-      const contentType = response.headers.get("content-type"); 
-      if (!contentType || !contentType.includes("application/json")) { 
-        throw new Error("Cannot connect to the server. Please ensure the Python backend is running."); 
+      const url =
+        `http://localhost:5000/api/capsule?date=${selectedDate}` +
+        `&city=${selectedLocation.name}` +
+        `&lat=${selectedLocation.lat}` +
+        `&lon=${selectedLocation.lon}`;
+
+      const response = await fetch(url);
+      const contentType = response.headers.get('content-type');
+
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(
+          'Cannot connect to the server. Please ensure the Python backend is running.'
+        );
       }
 
-      const data = await response.json(); 
+      const data = await response.json();
 
-      if (!response.ok) { 
-        throw new Error(data.error || "Failed to fetch data."); 
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch data.');
       }
 
-      setCapsuleData({ 
-        ...data, 
-        searchedLocation: selectedLocation  
+      setCapsuleData({
+        ...data,
+        searchedLocation: selectedLocation,
       });
-
-    } catch (err) { 
-      setError(err.message); 
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-12 flex flex-col items-center"> 
-      
-      {!capsuleData && ( 
-        <>
-          <Hero /> 
-          <div className="w-full max-w-4xl glass-card p-6 flex flex-col md:flex-row gap-4 items-end mt-8 relative z-20"> 
-            <div className="w-full"> 
-              <label className="block text-xs font-mono uppercase text-gray-400 mb-2">👤 Name</label> 
-              <input 
-                type="text"  
-                value={personName} 
-                onChange={(e) => setPersonName(e.target.value)}  
-                placeholder="Enter name..." 
-                className="glass-input w-full" 
+    <div className="app-shell">
+      {!capsuleData && (
+        <div className="landing-page">
+          <Hero />
+
+          {loading && (
+            <div className="loading-overlay" role="status" aria-live="polite">
+              <div className="loading-orbit">
+                <span className="loading-planet" />
+                <span className="loading-ring loading-ring-one" />
+                <span className="loading-ring loading-ring-two" />
+              </div>
+              <div className="loading-copy">
+                <span className="loading-kicker">ONTHISDATE</span>
+                <strong>Reconstructing your day</strong>
+                <span>Gathering the world as it was.</span>
+              </div>
+            </div>
+          )}
+
+          <div className="archive-form">
+            <div className="form-field">
+              <label>YOUR NAME</label>
+              <input
+                type="text"
+                value={personName}
+                onChange={(e) => setPersonName(e.target.value)}
+                placeholder="Enter your name"
+                className="timeline-input"
               />
             </div>
 
-            <div className="w-full"> 
-              <label className="block text-xs font-mono uppercase text-gray-400 mb-2">📅 Date</label> 
-              <input 
-                type="date"  
-                value={selectedDate} 
-                min="2006-01-01" 
-                max="2006-12-31" 
-                onChange={(e) => setSelectedDate(e.target.value)}  
-                className="glass-input w-full [color-scheme:dark]" 
+            <div className="form-field">
+              <label>THE DATE</label>
+              <input
+                type="date"
+                value={selectedDate}
+                min="2006-01-01"
+                max="2006-12-31"
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="timeline-input [color-scheme:dark]"
               />
             </div>
 
-            <div className="w-full"> 
-              <label className="block text-xs font-mono uppercase text-gray-400 mb-2">📍 City</label> 
-              <CityAutocomplete onLocationSelect={setSelectedLocation} /> 
+            <div className="form-field">
+              <label>THE PLACE</label>
+              <CityAutocomplete onLocationSelect={setSelectedLocation} />
             </div>
 
-            <button 
-              onClick={handleOpenCapsule}  
-              disabled={loading}  
-              className="w-full md:w-auto px-8 py-3 bg-brand-gold hover:bg-brand-goldHover text-dark-base font-semibold rounded-lg transition-colors flex items-center justify-center whitespace-nowrap disabled:opacity-50" 
+            <button
+              onClick={handleOpenCapsule}
+              disabled={loading}
+              className="open-button"
             >
-              {loading ? 'Opening...' : 'Open Capsule →'} 
+              {loading ? 'RECONSTRUCTING...' : 'ENTER THE ARCHIVE ↗'}
             </button>
           </div>
-          <p className="text-sm text-gray-500 mt-4">Currently showing historical data for 2006. More years coming soon.</p> 
-        </>
-      )}
 
-      {error && ( 
-        <div className="mt-8 p-4 bg-red-900/20 border border-red-500/50 text-red-200 rounded-lg"> 
-          {error} 
+          {error && <div className="error-message">{error}</div>}
+
+          <p className="landing-footnote">
+            Historical data currently available for 2006 · More years coming soon.
+          </p>
         </div>
       )}
 
-      {capsuleData && <ResultsDashboard data={capsuleData} personName={personName} />} 
+      {capsuleData && (
+        <>
+          <button
+            className="back-button"
+            onClick={() => setCapsuleData(null)}
+          >
+            ← START AGAIN
+          </button>
+
+          <ResultsDashboard
+            data={capsuleData}
+            personName={personName}
+          />
+        </>
+      )}
     </div>
   );
 }
