@@ -11,10 +11,6 @@
   --font-sans: Arial, Helvetica, sans-serif;
 }
 
-/* =========================================================
-   THE DAY YOU ARRIVED — DARK TIMELINE
-   ========================================================= */
-
 :root {
   --bg: #05070b;
   --surface: #0b0f16;
@@ -92,7 +88,6 @@ a {
   color: var(--bg);
 }
 
-/* ---------- GLOBAL ---------- */
 
 .app-shell {
   min-height: 100vh;
@@ -144,7 +139,6 @@ a {
   line-height: 1.8;
 }
 
-/* ---------- LOADING ---------- */
 
 .loading-overlay {
   position: fixed;
