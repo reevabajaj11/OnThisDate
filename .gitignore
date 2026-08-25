@@ -9,5 +9,6 @@ time_capsule.db
 #Datasets
 *.csv
 *.xslx
+!master_entertainment_2006.csv
 
 movie_posters/
