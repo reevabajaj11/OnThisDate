@@ -114,11 +114,10 @@ Used for the movie and song information displayed in the entertainment
 section.
 
 -   File used in the project: `master_entertainment_2006.csv`
--   Source: Kaggle
--   Dataset link: `<KAGGLE_LINK>`
+-   The entertainment section uses a custom dataset created specifically for this project.
 
-> The original Kaggle link for the entertainment dataset can be added
-> here.
+> Source: Manually compiled from publicly available information collected 
+> from various internet sources here.
 
 ### Indian Express Archive
 
@@ -180,8 +179,6 @@ project-root/
 │   ├── vite.config.js
 │   └── .gitignore
 │
-├── movie_posters/
-│
 ├── app.py
 ├── db.py
 ├── news.py
@@ -195,7 +192,6 @@ project-root/
 ├── master_entertainment_2006.csv
 │
 ├── time_capsule.db
-├── .env
 └── README.md
 ```
 
@@ -241,7 +237,28 @@ npm install
 
 The project uses SQLite and stores its data in `time_capsule.db`.
 
-### 1. Seed historical economic data
+### 1. Download the required Kaggle datasets 
+
+Before running the database seeding scripts, download the required
+datasets from Kaggle and place the relevant CSV files in the project
+root.
+
+#### India News Headlines Dataset
+
+- Dataset: [India News Headlines Dataset](https://www.kaggle.com/datasets/therohk/india-headlines-news-dataset)
+- Required file: `india-news-headlines.csv`
+
+#### Gold Price Dataset
+
+- Dataset: [Gold Price Dataset](https://www.kaggle.com/datasets/rizkykiky/gold-price-dataset)
+- Required file: `Daily.csv`
+
+#### Gold and Silver Prices Dataset
+
+- Dataset: [Gold and Silver Prices Dataset](https://www.kaggle.com/datasets/lbronchal/gold-and-silver-prices-dataset)
+- Required file: `silver_price.csv`
+
+### 2. Seed historical economic data
 
 Run:
 
@@ -252,7 +269,7 @@ python db.py
 This creates/populates the `historical_data` table for all 365 days of
 2006 using the available gold, silver, and exchange-rate data.
 
-### 2. Create the detailed news table
+### 3. Create the detailed news table
 
 Run:
 
@@ -262,7 +279,7 @@ python news.py
 
 This initializes the `detailed_historical_events` table.
 
-### 3. Fetch historical news
+### 4. Fetch historical news
 
 Run:
 
@@ -276,7 +293,7 @@ stores available article headlines and source URLs in the database.
 > This step performs web requests and includes a delay between archive
 > requests. It can take some time.
 
-### 4. Add entertainment data
+### 5. Add entertainment data
 
 Run:
 
@@ -287,7 +304,7 @@ python seed_entertainment.py
 This imports the 2006 movie and song data into the `entertainment`
 table.
 
-### 5. Optional news-dataset seeding
+### 5. News-dataset seeding
 
 The project also contains:
 
